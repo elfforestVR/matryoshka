@@ -1,0 +1,5 @@
+* gitHub
+** dotfile
+https://github.com/howardabrams/dot-files/blob/master/bin/git-repo.org
+** emacs для авторов
+https://github.com/thinkhuman/writingwithemacs
