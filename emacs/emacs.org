@@ -976,7 +976,7 @@ With a prefix ARG, remove start location."
 
 #+end_src
 
-*** TODO rss
+*** rss
 #+begin_src emacs-lisp
 ;; Configure Elfeed
 (use-package elfeed
@@ -1064,6 +1064,19 @@ With a prefix ARG, remove start location."
 ,*** [[https://habr.com/ru/rss/][Хабрахабр]]
 #+end_src
 *** TODO media
+#+begin_src emacs-lisp
+ ;; Emacs Multimedia System
+  (use-package emms
+    :straight t
+    :ensure t
+    :init
+    :bind
+    (("C-<f5>"   . emms-browser)
+     ("M-<f5>" . emms)
+     ("<XF86AudioPrev>" . emms-previous)
+     ("<XF86AudioNext>" . emms-next)
+     ("<XF86AudioPlay>" . emms-pause)))
+#+end_src
 *** Journal
     #+begin_src emacs-lisp
 (use-package org-journal
