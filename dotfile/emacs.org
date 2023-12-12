@@ -249,27 +249,33 @@
 #+end_src
 *** Fonts
 #+begin_src emacs-lisp
-    (ignore-errors (set-frame-font "DroidSansMon"))
-    (cond
-      ((member "Monaco" (font-family-list))
-       (set-face-attribute 'default nil :font "Monaco-12"))
-      ((member "Inconsolata" (font-family-list))
-       (set-face-attribute 'default nil :font "Inconsolata-12"))
-      ((member "Consolas" (font-family-list))
-       (set-face-attribute 'default nil :font "Consolas-12"))
-      ((member "DejaVu Sans Mono" (font-family-list))
-       (set-face-attribute 'default nil :font "DejaVu Sans Mono-14"))
-      )
+    ;; (ignore-errors (set-frame-font "DroidSansMon"))
+    ;; (cond
+    ;;   ((member "Monaco" (font-family-list))
+    ;;    (set-face-attribute 'default nil :font "Monaco-12"))
+    ;;   ((member "Inconsolata" (font-family-list))
+    ;;    (set-face-attribute 'default nil :font "Inconsolata-12"))
+    ;;   ((member "Consolas" (font-family-list))
+    ;;    (set-face-attribute 'default nil :font "Consolas-12"))
+    ;;   ((member "DejaVu Sans Mono" (font-family-list))
+    ;;    (set-face-attribute 'default nil :font "DejaVu Sans Mono-14"))
+    ;;   )
+(when (member "Roboto Mono" (font-family-list))
+  (set-face-attribute 'default nil :font "Roboto Mono" :height 140)
+  (set-face-attribute 'fixed-pitch nil :family "Roboto Mono"))
+
+(when (member "Source Sans Pro" (font-family-list))
+  (set-face-attribute 'variable-pitch nil :family "Source Sans Pro" :height 1.0))
 
     ;; Default Windows emoji font
-  (when (member "Segoe UI Emoji" (font-family-list))
-    (set-fontset-font t 'symbol (font-spec :family "Segoe UI Emoji") nil 'prepend)
-    (set-fontset-font "fontset-default" '(#xFE00 . #xFE0F) "Segoe UI Emoji"))
+(when (member "Segoe UI Emoji" (font-family-list))
+  (set-fontset-font t 'symbol (font-spec :family "Segoe UI Emoji") nil 'prepend)
+  (set-fontset-font "fontset-default" '(#xFE00 . #xFE0F) "Segoe UI Emoji"))
 
   ;; Linux emoji font
-  (when (member "Noto Color Emoji" (font-family-list))
-    (set-fontset-font t 'symbol (font-spec :family "Noto Color Emoji") nil 'prepend)
-    (set-fontset-font "fontset-default" '(#xFE00 . #xFE0F) "Noto Color Emoji"))
+(when (member "Noto Color Emoji" (font-family-list))
+  (set-fontset-font t 'symbol (font-spec :family "Noto Color Emoji") nil 'prepend)
+  (set-fontset-font "fontset-default" '(#xFE00 . #xFE0F) "Noto Color Emoji"))
 #+end_src
 *** Очистка всего не нужного
 #+begin_src emacs-lisp
@@ -780,6 +786,10 @@ With a prefix ARG, remove start location."
 
   (use-package eglot :straight t :ensure t)
 
+
+
+
+
   (use-package eglot-java
     :straight t
     :ensure t
@@ -851,6 +861,12 @@ With a prefix ARG, remove start location."
 (global-company-mode)
 (push 'slime-company slime-contribs)
 
+(setq company-idle-delay 0)
+; Show suggestions after entering one character.
+;; (setq company-minimum-prefix-length 1)
+; Use tab key to cycle through suggestions.
+; ('tng' means 'tab and go')
+;; (company-tng-configure-default)
 ;; (use-package company-flx
 ;;   :after company
 ;;   :straight t
@@ -975,7 +991,150 @@ With a prefix ARG, remove start location."
 (add-hook 'graphviz-dot-mode-hook 'company-mode)
 
 #+end_src
+*** ruby
+#+begin_src emacs-lisp
+(use-package ruby-mode
+  :ensure t
+  :straight t
+  :config
+  ;; (use-package ruby-hash-syntax :straight t :ensure t)
+  ;; (add-auto-mode 'ruby-mode
+  ;; 		 "Rakefile\\'" "\\.rake\\'" "\\.rxml\\'"
+  ;; 		 "\\.rjs\\'" "\\.irbrc\\'" "\\.pryrc\\'" "\\.builder\\'" "\\.ru\\'"
+  ;; 		 "\\.gemspec\\'" "Gemfile\\'")
 
+
+)
+#+end_src
+*** rust
+#+begin_src emacs-lisp
+(use-package rustic
+  :ensure
+  :straight t
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+(defun rk/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+#+end_src
+*** Лигатурные шрифты для терминала
+#+begin_src emacs-lisp
+(use-package ligature
+  :straight t
+  :config
+  ;; Enable the "www" ligature in every possible major mode
+  (ligature-set-ligatures 't '("www"))
+  ;; Enable traditional ligature support in eww-mode, if the
+  ;; `variable-pitch' face supports it
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  ;; Enable all Cascadia Code ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                       ))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
+#+end_src
+*** tereminal
+#+begin_src emacs-lisp
+(use-package term
+  :straight t
+  :config
+  (setq explicit-shell-file-name "bash")
+  ;;(setq explicit-zsh-args '())
+  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+
+(use-package eterm-256color
+  :straight t
+  :hook (term-mode . eterm-256color-mode))
+
+(use-package vterm
+  :commands vterm
+  :straight t
+  :config
+  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+  ;;(setq vterm-shell "zsh")
+  (setq vterm-max-scrollback 10000))
+
+(setq comint-output-filter-functions
+      (remove 'ansi-color-process-output comint-output-filter-functions))
+
+(add-hook 'shell-mode-hook
+          (lambda ()
+            ;; Disable font-locking in this buffer to improve performance
+            (font-lock-mode -1)
+            ;; Prevent font-locking from being re-enabled in this buffer
+            (make-local-variable 'font-lock-function)
+            (setq font-lock-function (lambda (_) nil))
+            (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter nil t)))
+
+
+(defun efs/configure-eshell ()
+  ;; Save command history when commands are entered
+  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+
+  ;; Truncate buffer for performance
+  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+
+  ;; Bind some useful keys for evil-mode
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+  (evil-normalize-keymaps)
+
+  (setq eshell-history-size         10000
+        eshell-buffer-maximum-lines 10000
+        eshell-hist-ignoredups t
+        eshell-scroll-to-bottom-on-input t))
+
+(use-package eshell
+  :straight t
+  :hook (eshell-first-time-mode . efs/configure-eshell))
+
+(use-package eshell-git-prompt 
+:straight t
+
+:config
+(eshell-git-prompt-use-theme 'powerline))
+
+(with-eval-after-load 'esh-opt
+  (setq eshell-destroy-buffer-when-process-dies t)
+  (setq eshell-visual-commands '("htop" "zsh" "vim" "bash")))
+
+
+#+end_src
 *** rss
 #+begin_src emacs-lisp
 ;; Configure Elfeed
@@ -1289,6 +1448,15 @@ With a prefix ARG, remove start location."
     :straight t
     :bind ("C-<f5>" . quickrun)
     )
+#+end_src
+*** Золотое сечение
+#+begin_src emacs-lisp
+(use-package zoom
+  :commands zoom-mode
+  :straight t
+  :config
+  (setq zoom-size '(0.618 . 0.618)))
+(zoom-mode t)
 #+end_src
 *** Отступы выделяются с помощьюfont-lock
 #+begin_src emacs-lisp
